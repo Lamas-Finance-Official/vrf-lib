@@ -41,31 +41,40 @@ pub fn request_random<T: InstructionData>(ix: T, accounts: Vec<AccountMetaRef>) 
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize)]
-pub struct Random([u8; Random::BYTES]);
+pub struct VrfResult {
+    pub random: [u8; VrfResult::BYTES],
+    pub request_transaction: Pubkey,
+}
 
-impl Default for Random {
+impl Default for VrfResult {
     fn default() -> Self {
-        Self(Default::default())
+        Self {
+            random: Default::default(),
+            request_transaction: Pubkey::default(),
+        }
     }
 }
 
-impl Random {
+impl VrfResult {
     pub const BYTES: usize = 16;
+    pub const SIZE: usize = std::mem::size_of::<Self>();
+
+    #[allow(unused)]
+    fn new(random: [u8; VrfResult::BYTES]) -> Self {
+        Self {
+            random,
+            request_transaction: Pubkey::default(),
+        }
+    }
 
     pub fn bound<T>(self, range: RangeInclusive<T>) -> T
     where
         T: PrimInt + AsPrimitive<i128>,
         i128: AsPrimitive<T>,
     {
-        let v = i128::from_be_bytes(self.0);
+        let v = i128::from_be_bytes(self.random);
         let bound: i128 = (*range.end() - *range.start()).as_();
         ((v % bound) + range.start().as_()).as_()
-    }
-}
-
-impl From<[u8; Random::BYTES]> for Random {
-    fn from(v: [u8; Random::BYTES]) -> Self {
-        Self(v)
     }
 }
 
@@ -75,14 +84,14 @@ mod test {
 
     #[derive(AnchorSerialize)]
     struct A {
-        random: Random,
+        random: VrfResult,
         value: u32,
     }
 
     #[test]
     fn test() {
         let a = A {
-            random: Random::default(),
+            random: VrfResult::default(),
             value: 1234,
         };
 
@@ -93,7 +102,7 @@ mod test {
 
     #[test]
     fn r1() {
-        let r = Random([111, 118, 107, 173, 240, 168, 69, 73, 10, 9, 142, 105, 124, 62, 45, 22]);
+        let r = VrfResult::new([111, 118, 107, 173, 240, 168, 69, 73, 10, 9, 142, 105, 124, 62, 45, 22]);
         println!("{}", r.bound(0u64..=u32::MAX as u64));
     }
 }
