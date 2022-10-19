@@ -9,3 +9,5 @@ name = "vrf_lib"
 [dependencies]
 anchor-lang = "0.25"
 num-traits = "0.2"
+
+[workspace]

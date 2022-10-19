@@ -42,7 +42,7 @@ pub fn request_random<T: InstructionData>(ix: T, accounts: Vec<AccountMetaRef>) 
 
 #[derive(AnchorSerialize, AnchorDeserialize)]
 pub struct VrfResult {
-    pub random: [u8; VrfResult::BYTES],
+    pub random: [u8; VrfResult::RANDOM_BYTE_LEN],
     pub request_transaction: Pubkey,
 }
 
@@ -56,11 +56,10 @@ impl Default for VrfResult {
 }
 
 impl VrfResult {
-    pub const BYTES: usize = 16;
-    pub const SIZE: usize = std::mem::size_of::<Self>();
+    pub const RANDOM_BYTE_LEN: usize = 16;
 
     #[allow(unused)]
-    fn new(random: [u8; VrfResult::BYTES]) -> Self {
+    fn new(random: [u8; VrfResult::RANDOM_BYTE_LEN]) -> Self {
         Self {
             random,
             request_transaction: Pubkey::default(),
